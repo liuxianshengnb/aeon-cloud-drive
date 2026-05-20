@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AEON FILE CENTER</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#02050d;
+    font-family:'Inter',sans-serif;
+    color:white;
+}
+
+/* =========================
+   背景
+========================= */
+
+.scene{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+}
+
+.layer{
+    position:absolute;
+    inset:-20%;
+    transition:transform .08s linear;
+    will-change:transform;
+}
+
+.blob{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(80px);
+    opacity:.72;
+    mix-blend-mode:screen;
+}
+
+.l1 .b1{
+    width:360px;
+    height:360px;
+    background:#00e5ff;
+    top:8%;
+    left:8%;
+}
+
+.l1 .b2{
+    width:300px;
+    height:300px;
+    background:#2563ff;
+    right:10%;
+    top:30%;
+}
+
+.l2 .b1{
+    width:420px;
+    height:420px;
+    background:#7c3aed;
+    bottom:-5%;
+    left:22%;
+}
+
+.l2 .b2{
+    width:240px;
+    height:240px;
+    background:#00ffcc;
+    right:20%;
+    bottom:15%;
+}
+
+.grid{
+    position:absolute;
+    inset:0;
+
+    background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+
+    background-size:44px 44px;
+}
+
+/* =========================
+   登录
+========================= */
+
+.card{
+    position:absolute;
+
+    top:50%;
+    left:50%;
+
+    transform:
+    translate(-50%,-50%)
+    perspective(1400px);
+
+    width:90%;
+    max-width:420px;
+
+    padding:34px;
+
+    border-radius:30px;
+
+    background:
+    rgba(10,15,30,.72);
+
+    border:
+    1px solid rgba(255,255,255,.08);
+
+    backdrop-filter:blur(18px);
+
+    box-shadow:
+    0 20px 60px rgba(0,0,0,.45);
+
+    z-index:20;
+
+    transition:.08s linear;
+}
+
+.card::before{
+
+    content:'';
+
+    position:absolute;
+    inset:-1px;
+
+    border-radius:30px;
+
+    background:
+    linear-gradient(
+        135deg,
+        rgba(0,229,255,.9),
+        transparent,
+        rgba(37,99,255,.8)
+    );
+
+    z-index:-1;
+
+    opacity:.75;
+}
+
+.logo{
+    text-align:center;
+    font-size:42px;
+    font-weight:800;
+    letter-spacing:10px;
+    margin-bottom:10px;
+}
+
+.sub{
+    text-align:center;
+    color:rgba(255,255,255,.5);
+    margin-bottom:32px;
+    letter-spacing:3px;
+    font-size:13px;
+}
+
+.field{
+    margin-bottom:18px;
+}
+
+.field input{
+    width:100%;
+    height:58px;
+    border:none;
+    outline:none;
+    border-radius:16px;
+    padding:0 18px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+    color:white;
+    font-size:15px;
+}
+
+.btn{
+    width:100%;
+    height:58px;
+    border:none;
+    border-radius:16px;
+    background:linear-gradient(90deg,#00e5ff,#2563ff);
+    color:white;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:3px;
+    cursor:pointer;
+}
+
+.error{
+    margin-top:14px;
+    text-align:center;
+    color:#ff6b6b;
+    font-size:13px;
+}
+
+/* =========================
+   主界面
+========================= */
+
+.dashboard{
+    position:absolute;
+    inset:0;
+    overflow:auto;
+    padding:22px;
+    display:none;
+    z-index:50;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:24px;
+}
+
+.title{
+    font-size:30px;
+    font-weight:800;
+}
+
+.logout{
+    border:none;
+    background:rgba(255,255,255,.08);
+    color:white;
+    padding:12px 20px;
+    border-radius:14px;
+    cursor:pointer;
+}
+
+.grid-box{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:20px;
+}
+
+@media(min-width:900px){
+
+    .grid-box{
+        grid-template-columns:1fr 1fr;
+    }
+
+}
+
+.panel{
+    background:rgba(10,15,30,.72);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:28px;
+    padding:24px;
+}
+
+.upload-zone{
+    display:block;
+    border-radius:28px;
+    overflow:hidden;
+    cursor:pointer;
+    border:1px solid rgba(255,255,255,.08);
+}
+
+.upload-inner{
+    padding:60px 24px;
+    text-align:center;
+}
+
+.upload-icon{
+    width:90px;
+    height:90px;
+    margin:auto;
+    border-radius:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:42px;
+    background:linear-gradient(135deg,rgba(0,229,255,.22),rgba(37,99,255,.18));
+    margin-bottom:24px;
+}
+
+.upload-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:14px 30px;
+    border-radius:16px;
+    background:linear-gradient(90deg,#00e5ff,#2563ff);
+    font-size:14px;
+    font-weight:700;
+}
+
+.file-list{
+    margin-top:22px;
+}
+
+.file-card{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px;
+    border-radius:18px;
+    margin-bottom:14px;
+    background:rgba(255,255,255,.04);
+}
+
+/* 上传进度条 */
+
+.progress-wrap{
+    display:none;
+    margin-top:20px;
+    margin-bottom:20px;
+}
+
+.progress-bar{
+    width:100%;
+    height:18px;
+    border-radius:999px;
+    overflow:hidden;
+    background:rgba(255,255,255,.06);
+}
+
+.progress-inner{
+    width:0%;
+    height:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#00e5ff,#2563ff,#7c3aed);
+    transition:width .15s;
+}
+
+.progress-text{
+    margin-top:10px;
+    text-align:center;
+    color:#00e5ff;
+}
+
+.download-btn{
+    text-decoration:none;
+    padding:12px 18px;
+    border-radius:14px;
+    background:linear-gradient(90deg,#00e5ff,#2563ff);
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="scene">
+
+    <div class="layer l1" id="layer1">
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+    </div>
+
+    <div class="layer l2" id="layer2">
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+    </div>
+
+    <div class="grid"></div>
+
+</div>
+
+<div class="card" id="loginCard">
+
+    <div class="logo">
+        AEON
+    </div>
+
+    <div class="sub">
+        QUANTUM FILE CENTER
+    </div>
+
+    <div class="field">
+        <input type="text" id="username" placeholder="USERNAME">
+    </div>
+
+    <div class="field">
+        <input type="password" id="password" placeholder="PASSWORD">
+    </div>
+
+    <button class="btn" onclick="login()">
+        LOGIN
+    </button>
+
+    <div class="error" id="error"></div>
+
+</div>
+
+<div class="dashboard" id="dashboard">
+
+    <div class="topbar">
+
+        <div class="title">
+            FILE CENTER
+        </div>
+
+        <button class="logout" onclick="logout()">
+            退出
+        </button>
+
+    </div>
+
+    <div class="grid-box">
+
+        <div class="panel">
+
+            <h2>上传中心</h2>
+
+            <br>
+
+            <label class="upload-zone">
+
+                <div class="upload-inner">
+
+                    <div class="upload-icon">
+                        ⬆
+                    </div>
+
+                    <h2>拖拽文件上传</h2>
+
+                    <br>
+
+                    <div class="upload-btn">
+                        选择文件
+                    </div>
+
+                </div>
+
+                <input
+                    type="file"
+                    id="fileInput"
+                    multiple
+                    hidden
+                >
+
+            </label>
+
+            <div class="progress-wrap" id="progressWrap">
+
+                <div class="progress-bar">
+                    <div class="progress-inner" id="progressInner"></div>
+                </div>
+
+                <div class="progress-text" id="progressText">
+                    0%
+                </div>
+
+            </div>
+
+            <div class="file-list" id="fileList"></div>
+
+        </div>
+
+        <div class="panel">
+
+            <h2>下载中心</h2>
+
+            <br>
+
+            <div id="downloadList"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+async function login(){
+
+    const user =
+    document.getElementById('username').value;
+
+    const pass =
+    document.getElementById('password').value;
+
+    const res = await fetch('/login',{
+
+        method:'POST',
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+        body:JSON.stringify({
+            user,
+            pass
+        })
+
+    });
+
+    const data =
+    await res.json();
+
+    if(data.success){
+
+        document.getElementById(
+        'loginCard'
+        ).style.display='none';
+
+        document.getElementById(
+        'dashboard'
+        ).style.display='block';
+
+        loadFiles();
+
+    }else{
+
+        document.getElementById(
+        'error'
+        ).innerText='账号或密码错误';
+
+    }
+
+}
+
+function logout(){
+    location.reload();
+}
+
+const fileInput =
+document.getElementById('fileInput');
+
+const fileList =
+document.getElementById('fileList');
+
+const downloadList =
+document.getElementById('downloadList');
+
+const progressWrap =
+document.getElementById('progressWrap');
+
+const progressInner =
+document.getElementById('progressInner');
+
+const progressText =
+document.getElementById('progressText');
+
+fileInput.addEventListener(
+'change',
+async e=>{
+
+    const files =
+    [...e.target.files];
+
+    for(const file of files){
+
+        await uploadFile(file);
+
+    }
+
+    loadFiles();
+
+});
+
+function uploadFile(file){
+
+    return new Promise((resolve,reject)=>{
+
+        const formData =
+        new FormData();
+
+        formData.append(
+            'file',
+            file
+        );
+
+        const xhr =
+        new XMLHttpRequest();
+
+        xhr.open(
+            'POST',
+            '/upload'
+        );
+
+        progressWrap.style.display='block';
+
+        xhr.upload.onprogress = e=>{
+
+            if(e.lengthComputable){
+
+                const percent =
+                Math.round(
+                    (e.loaded/e.total)*100
+                );
+
+                progressInner.style.width =
+                percent + '%';
+
+                progressText.innerText =
+                percent + '%';
+
+            }
+
+        };
+
+        xhr.onload = ()=>{
+
+            progressInner.style.width='100%';
+
+            progressText.innerText='上传完成';
+
+            setTimeout(()=>{
+
+                progressWrap.style.display='none';
+
+                progressInner.style.width='0%';
+
+                progressText.innerText='0%';
+
+            },1200);
+
+            resolve();
+
+        };
+
+        xhr.onerror = ()=>{
+
+            progressText.innerText='上传失败';
+
+            reject();
+
+        };
+
+        xhr.send(formData);
+
+    });
+
+}
+
+async function loadFiles(){
+
+    const res =
+    await fetch('/files');
+
+    const files =
+    await res.json();
+
+    fileList.innerHTML='';
+    downloadList.innerHTML='';
+
+    files.forEach(file=>{
+
+        const size =
+        (file.size/1024/1024)
+        .toFixed(2);
+
+        downloadList.innerHTML += `
+
+        <div class="file-card">
+
+            <div>
+                ${file.name}
+                <br>
+                ${size} MB
+            </div>
+
+            <div style="display:flex;gap:10px;">
+
+                <a
+                    class="download-btn"
+                    href="${file.url}"
+                    download
+                >
+                    下载
+                </a>
+
+                <button
+                    class="download-btn"
+                    onclick="deleteFile('${file.name}')"
+                >
+                    删除
+                </button>
+
+            </div>
+
+        </div>
+        `;
+
+    });
+
+}
+
+async function deleteFile(name){
+
+    await fetch(
+        '/delete/' + name,
+        {
+            method:'DELETE'
+        }
+    );
+
+    loadFiles();
+
+}
+
+/* =========================
+   陀螺仪 + 视差
+========================= */
+
+const card =
+document.getElementById('loginCard');
+
+const layer1 =
+document.getElementById('layer1');
+
+const layer2 =
+document.getElementById('layer2');
+
+function updateScene(x,y){
+
+    if(card.style.display !== 'none'){
+
+        card.style.transform =
+        `
+        translate(-50%,-50%)
+        perspective(1400px)
+        rotateX(${y*0.7}deg)
+        rotateY(${x*0.7}deg)
+        `;
+
+    }
+
+    layer1.style.transform =
+    `
+    translate3d(${x*2}px,${y*2}px,0)
+    `;
+
+    layer2.style.transform =
+    `
+    translate3d(${x*4}px,${y*4}px,0)
+    `;
+
+}
+
+/* 鼠标 */
+
+window.addEventListener(
+'mousemove',
+e=>{
+
+    const x =
+    (e.clientX/window.innerWidth-.5)
+    * 12;
+
+    const y =
+    (e.clientY/window.innerHeight-.5)
+    * 12;
+
+    updateScene(x,y);
+
+});
+
+/* 手机陀螺仪 */
+
+function enableGyro(){
+
+    window.addEventListener(
+    'deviceorientation',
+    e=>{
+
+        let gamma =
+        e.gamma || 0;
+
+        let beta =
+        e.beta || 0;
+
+        gamma =
+        Math.max(-20,
+        Math.min(20,gamma));
+
+        beta =
+        Math.max(-20,
+        Math.min(20,beta));
+
+        updateScene(
+            gamma,
+            beta
+        );
+
+    });
+
+}
+
+/* iPhone权限 */
+
+if(
+typeof
+DeviceOrientationEvent
+!== 'undefined'
+&&
+typeof
+DeviceOrientationEvent
+.requestPermission
+=== 'function'
+){
+
+document.body.addEventListener(
+'click',
+async ()=>{
+
+    const permission =
+    await DeviceOrientationEvent
+    .requestPermission();
+
+    if(permission === 'granted'){
+
+        enableGyro();
+
+    }
+
+},
+{once:true});
+
+}else{
+
+    enableGyro();
+
+}
+
+</script>
+
+</body>
+</html>
