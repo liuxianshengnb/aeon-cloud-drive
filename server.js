@@ -16,7 +16,7 @@ app.use(cors({
 
 app.use(express.json());
 
-/* =========================
+/* =========================  
    路径配置（使用绝对路径）
 ========================= */
 const UPLOAD_DIR = path.resolve(__dirname, "uploads");
